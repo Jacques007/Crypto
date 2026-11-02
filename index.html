@@ -5,31 +5,317 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crypto for Koos</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      color: #f1f5f9;
       min-height: 100vh;
-      margin: 0;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
       text-align: center;
+      margin-bottom: 2.5rem;
     }
+
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      font-size: 2.2rem;
+      margin-bottom: 0.4rem;
     }
-    p {
+
+    .subtitle {
       color: #94a3b8;
-      font-size: 1.1rem;
     }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
+      background: #1e293b;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 0.9rem 1rem;
+      text-align: left;
+    }
+
+    th {
+      background: #0f172a;
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    tr {
+      border-top: 1px solid #334155;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    tr:hover {
+      background: #334155;
+    }
+
+    tr.selected {
+      background: #1e40af;
+    }
+
+    .coin-name {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 500;
+    }
+
+    .coin-name img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .positive { color: #22c55e; }
+    .negative { color: #ef4444; }
+
+    /* Details panel */
+    #details {
+      margin-top: 2rem;
+      padding: 1.75rem;
+      background: #1e293b;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      display: none;
+    }
+
+    #details.visible {
+      display: block;
+    }
+
+    .details-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .details-header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+    }
+
+    .details-header h2 {
+      font-size: 1.6rem;
+    }
+
+    .details-header .symbol {
+      color: #94a3b8;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .description {
+      line-height: 1.6;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+
+    .loading, .error {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+    }
+
+    .error { color: #f87171; }
   </style>
 </head>
 <body>
-  <div>
-    <h1>Hello at Crypto for Koos</h1>
-    <p>Crypto information coming soon…</p>
+  <div class="container">
+    <header>
+      <h1>Crypto for Koos</h1>
+      <p class="subtitle">Click any coin to see basic information</p>
+    </header>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Coin</th>
+            <th>Price</th>
+            <th>24h %</th>
+            <th>Market Cap</th>
+          </tr>
+        </thead>
+        <tbody id="coin-table">
+          <tr>
+            <td colspan="5" class="loading">Loading coins…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="details">
+      <!-- Filled by JavaScript -->
+    </div>
   </div>
+
+  <script>
+    const tableBody = document.getElementById("coin-table");
+    const detailsEl = document.getElementById("details");
+    let selectedId = null;
+
+    // Format large numbers nicely
+    function formatNumber(num) {
+      if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
+      if (num >= 1e9)  return "$" + (num / 1e9).toFixed(2) + "B";
+      if (num >= 1e6)  return "$" + (num / 1e6).toFixed(2) + "M";
+      return "$" + num.toLocaleString();
+    }
+
+    function formatPrice(price) {
+      if (price >= 1) return "$" + price.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      return "$" + price.toPrecision(4);
+    }
+
+    // Load top coins into the table
+    async function loadCoins() {
+      try {
+        const res = await fetch(
+          "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false"
+        );
+        const coins = await res.json();
+
+        tableBody.innerHTML = "";
+
+        coins.forEach((coin, index) => {
+          const change = coin.price_change_percentage_24h;
+          const changeClass = change >= 0 ? "positive" : "negative";
+          const changeText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+
+          const row = document.createElement("tr");
+          row.dataset.id = coin.id;
+
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>
+              <div class="coin-name">
+                <img src="${coin.image}" alt="${coin.name}">
+                <span>${coin.name} <small style="color:#94a3b8">${coin.symbol.toUpperCase()}</small></span>
+              </div>
+            </td>
+            <td>${formatPrice(coin.current_price)}</td>
+            <td class="${changeClass}">${changeText}</td>
+            <td>${formatNumber(coin.market_cap)}</td>
+          `;
+
+          row.addEventListener("click", () => selectCoin(coin.id, row));
+          tableBody.appendChild(row);
+        });
+      } catch (err) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="error">Failed to load coins. Please try again later.</td></tr>`;
+      }
+    }
+
+    // Show details for a selected coin
+    async function selectCoin(id, rowElement) {
+      // Highlight selected row
+      document.querySelectorAll("tr").forEach(r => r.classList.remove("selected"));
+      rowElement.classList.add("selected");
+      selectedId = id;
+
+      detailsEl.classList.add("visible");
+      detailsEl.innerHTML = `<div class="loading">Loading details…</div>`;
+
+      try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
+        const data = await res.json();
+
+        const change = data.market_data.price_change_percentage_24h;
+        const changeClass = change >= 0 ? "positive" : "negative";
+
+        detailsEl.innerHTML = `
+          <div class="details-header">
+            <img src="${data.image.large}" alt="${data.name}">
+            <div>
+              <h2>${data.name} <span class="symbol">${data.symbol.toUpperCase()}</span></h2>
+              <div style="color:#94a3b8; font-size:0.9rem">Rank #${data.market_cap_rank}</div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Current Price</div>
+              <div class="stat-value">${formatPrice(data.market_data.current_price.usd)}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Market Cap</div>
+              <div class="stat-value">${formatNumber(data.market_data.market_cap.usd)}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">24h Change</div>
+              <div class="stat-value ${changeClass}">
+                ${change >= 0 ? "+" : ""}${change.toFixed(2)}%
+              </div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">24h Volume</div>
+              <div class="stat-value">${formatNumber(data.market_data.total_volume.usd)}</div>
+            </div>
+          </div>
+
+          <div class="description">
+            ${data.description.en
+              ? data.description.en.split(". ").slice(0, 3).join(". ") + "."
+              : "No description available."}
+          </div>
+        `;
+      } catch (err) {
+        detailsEl.innerHTML = `<div class="error">Could not load details for this coin.</div>`;
+      }
+    }
+
+    // Start
+    loadCoins();
+  </script>
 </body>
 </html>
