@@ -217,45 +217,56 @@
       return "$" + price.toPrecision(4);
     }
 
-    // Load top coins into the table
     async function loadCoins() {
-      try {
-        const res = await fetch(
-          "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false"
-        );
-        const coins = await res.json();
+  try {
+    const res = await fetch(
+      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false"
+    );
 
-        tableBody.innerHTML = "";
-
-        coins.forEach((coin, index) => {
-          const change = coin.price_change_percentage_24h;
-          const changeClass = change >= 0 ? "positive" : "negative";
-          const changeText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
-
-          const row = document.createElement("tr");
-          row.dataset.id = coin.id;
-
-          row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>
-              <div class="coin-name">
-                <img src="${coin.image}" alt="${coin.name}">
-                <span>${coin.name} <small style="color:#94a3b8">${coin.symbol.toUpperCase()}</small></span>
-              </div>
-            </td>
-            <td>${formatPrice(coin.current_price)}</td>
-            <td class="${changeClass}">${changeText}</td>
-            <td>${formatNumber(coin.market_cap)}</td>
-          `;
-
-          row.addEventListener("click", () => selectCoin(coin.id, row));
-          tableBody.appendChild(row);
-        });
-      } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="error">Failed to load coins. Please try again later. Error & err</td></tr>`;
-      }
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
 
+    const coins = await res.json();
+
+    tableBody.innerHTML = "";
+
+    coins.forEach((coin, index) => {
+      const change = coin.price_change_percentage_24h || 0;
+      const changeClass = change >= 0 ? "positive" : "negative";
+      const changeText =
+        (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+
+      const row = document.createElement("tr");
+      row.dataset.id = coin.id;
+
+      row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>
+          <div class="coin-name">
+            <img src="${coin.image}" alt="${coin.name}">
+            <span>${coin.name}
+              <small style="color:#94a3b8">
+                ${coin.symbol.toUpperCase()}
+              </small>
+            </span>
+          </div>
+        </td>
+        <td>${formatPrice(coin.current_price)}</td>
+        <td class="${changeClass}">${changeText}</td>
+        <td>${formatNumber(coin.market_cap)}</td>
+      `;
+
+      row.addEventListener("click", () => selectCoin(coin.id, row));
+      tableBody.appendChild(row);
+    });
+  } catch (err) {
+    console.error(err);
+
+    tableBody.innerHTML =
+      '<tr><td colspan="5" class="error">Failed to load coins. Please try again later.</td></tr>';
+  }
+}
     // Show details for a selected coin
     async function selectCoin(id, rowElement) {
       // Highlight selected row
