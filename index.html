@@ -476,7 +476,7 @@ function renderCoinDetails(data) {
       : "negative";
 
   //ATH date formatting
-  let athLabel = "All-Time High";
+  let athLabel = 'All-Time High';
   if (data.market_data.ath_date && data.market_data.ath_date.usd){
     const athDate = new Date(data.market_data.ath_date.usd).toLocaleDateString("en-GB",{
       day: "numeric",
