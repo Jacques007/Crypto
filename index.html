@@ -475,6 +475,16 @@ function renderCoinDetails(data) {
       ? "positive"
       : "negative";
 
+  //ATH date formatting
+  let athLabel = "All-Time High";
+  if (data.market_data.ath_date && data.market_data.ath_date.usd){
+    const athDate = new Date(data.market_data.ath_date.usd).toLocaleDateString("en-GB",{
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+    athLabel = 'All-Time High (${athDate});
+  
   detailsEl.classList.add("visible");
 
   detailsEl.innerHTML = `
@@ -547,7 +557,7 @@ function renderCoinDetails(data) {
 
     <div class="stat">
       <div class="stat-label">
-        All-Time High
+        ${athLabel}
       </div>
       <div class="stat-value">
         ${formatPrice(
