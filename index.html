@@ -173,6 +173,7 @@
     <header>
       <h1>Crypto for Koos</h1>
       <p class="subtitle">Click any coin to see basic information</p>
+      <p class="last-updated" id="last-updated">Loading...<p></p>
     </header>
 
     <div class="table-wrapper">
@@ -202,6 +203,7 @@
   <script>
     const tableBody = document.getElementById("coin-table");
     const detailsEl = document.getElementById("details");
+    const lastUpdatedE1 = document.getElementById("last-updated");
     let selectedId = null;
 
     // Format large numbers nicely
@@ -217,6 +219,20 @@
       return "$" + price.toPrecision(4);
     }
 
+  // Format the current time
+    function updateTimestamp(){
+      const now = new Date();
+      const options = {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hou12: false
+      }
+      lastUpdatedE1.textContent = "last updatedL " + now.toLocaleString("en-GB", options);
+    }
+    
     async function loadCoins() {
   try {
     const res = await fetch(
