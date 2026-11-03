@@ -210,6 +210,7 @@
     const detailsEl = document.getElementById("details");
     const lastUpdatedEl = document.getElementById("last-updated");
     let selectedId = null;
+    let coinDetailsCache = {};
 
     // Format large numbers nicely
     function formatNumber(num) {
@@ -289,37 +290,17 @@
       '<tr><td colspan="5" class="error">Failed to load coins. Please try again later.</td></tr>';
   }
 }
-    // Show details for a selected coin
-    async function selectCoin(id, rowElement) {
-      // Highlight selected row
-      document.querySelectorAll("tr").forEach(r => r.classList.remove("selected"));
-      rowElement.classList.add("selected");
-      selectedId = id;
 
-      detailsEl.classList.add("visible");
-      detailsEl.innerHTML = `<div class="loading">Loading details…</div>`;
 
-      try {
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
-        if (!res.ok){
-          throw new Error('HTTP${res.status}');
-        }
-        const data = await res.json();
+    function renderCoinDetails(data) {
 
-        const change = data.market_data.price_change_percentage_24h;
-        const changeClass = change >= 0 ? "positive" : "negative";
+  const change =
+    data.market_data.price_change_percentage_24h || 0;
 
-        //ATH date formatting
-        let athDate = "-";
-        if (data.market_date.ath_date && data.market_data.ath_date.usd){
-          athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          });
-        }
+  const changeClass =
+    change >= 0 ? "positive" : "negative";
 
-        detailsEl.innerHTML = `
+ detailsEl.innerHTML = `
           <div class="details-header">
             <img src="${data.image.large}" alt="${data.name}">
             <div>
@@ -374,6 +355,50 @@
       }
     }
 
+}
+
+    ///JAW JAW
+
+    
+    // Show details for a selected coin
+    async function selectCoin(id, rowElement) {
+      // Highlight selected row
+      document.querySelectorAll("#coin-table tr").forEach(r => r.classList.remove("selected"));
+      rowElement.classList.add("selected");
+      selectedId = id;
+
+      detailsEl.classList.add("visible");
+
+        // Use cached data if already loaded
+      if (coinDetailsCache[id]) {
+       renderCoinDetails(coinDetailsCache[id]);
+      return;
+     }
+      detailsEl.innerHTML = `<div class="loading">Loading details…</div>`;
+
+      try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
+        if (!res.ok){
+          throw new Error('HTTP ${res.status}');
+        }
+        const data = await res.json();
+        // Save in cache
+        coinDetailsCache[id] = data;
+
+        renderCoinDetails(data);
+       
+
+        //ATH date formatting
+        let athDate = "-";
+        if (data.market_date.ath_date && data.market_data.ath_date.usd){
+          athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+        }
+
+       
     // Start
     loadCoins();
   </script>
