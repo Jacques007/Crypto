@@ -34,6 +34,11 @@
       color: #94a3b8;
     }
 
+    .last-updated{
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
     /* Table */
     .table-wrapper {
       overflow-x: auto;
@@ -301,6 +306,16 @@
         const change = data.market_data.price_change_percentage_24h;
         const changeClass = change >= 0 ? "positive" : "negative";
 
+        //ATH date formatting
+        let athDate = "-";
+        if (data.market_date.ath_date && data.market_data.ath_dae.usd){
+          athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+        }
+
         detailsEl.innerHTML = `
           <div class="details-header">
             <img src="${data.image.large}" alt="${data.name}">
@@ -329,6 +344,19 @@
               <div class="stat-label">24h Volume</div>
               <div class="stat-value">${formatNumber(data.market_data.total_volume.usd)}</div>
             </div>
+            <div class="stat">
+              <div class="stat-label">Circulating Supply</div>
+              <div class="stat-value">${formatSupply(data.market_data.circulating_supply)}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">All-Time High</div>
+              <div class="stat-value">${formatPrice(data.market_data.ath.usd)}</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Fully Diluted Valuation</div>
+              <div class="stat-value">${formatNumber(data.market_data.fully_diluted_valuation.usd)}</div>
+            </div>
+            
           </div>
 
           <div class="description">
