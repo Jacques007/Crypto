@@ -390,7 +390,7 @@
 
         //ATH date formatting
         let athDate = "-";
-        if (data.market_date.ath_date && data.market_data.ath_date.usd){
+        if (data.market_data;.ath_date && data.market_data.ath_date.usd){
           athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
             day: "numeric",
             month: "short",
