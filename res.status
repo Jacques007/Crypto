@@ -1,246 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto for Koos</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto for Koos</title>
 
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      min-height: 100vh;
-      padding: 2rem 1rem;
-    }
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
 
-    header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
 
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.4rem;
-    }
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
 
-    .subtitle {
-      color: #94a3b8;
-    }
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
 
-    .last-updated{
-      font-size: 0.85rem;
-      color: #64748b;
-    }
+.subtitle {
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
 
-    /* Table */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: 12px;
-      border: 1px solid #1e293b;
-      background: #1e293b;
-    }
+.last-updated {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
+#refresh-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
 
-    th, td {
-      padding: 0.9rem 1rem;
-      text-align: left;
-    }
+#refresh-btn:hover {
+  background: #1d4ed8;
+}
 
-    th {
-      background: #0f172a;
-      color: #94a3b8;
-      font-weight: 500;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+  background: #1e293b;
+}
 
-    tr {
-      border-top: 1px solid #334155;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
 
-    tr:hover {
-      background: #334155;
-    }
+th,
+td {
+  padding: 0.9rem 1rem;
+  text-align: left;
+}
 
-    tr.selected {
-      background: #1e40af;
-    }
+th {
+  background: #0f172a;
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
 
-    .coin-name {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-weight: 500;
-    }
+tr {
+  border-top: 1px solid #334155;
+  cursor: pointer;
+}
 
-    .coin-name img {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-    }
+tr:hover {
+  background: #334155;
+}
 
-    .positive { color: #22c55e; }
-    .negative { color: #ef4444; }
+tr.selected {
+  background: #1e40af;
+}
 
-    /* Details panel */
-    #details {
-      margin-top: 2rem;
-      padding: 1.75rem;
-      background: #1e293b;
-      border-radius: 12px;
-      border: 1px solid #334155;
-      display: none;
-    }
+.coin-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-    #details.visible {
-      display: block;
-    }
+.coin-name img {
+  width: 28px;
+  height: 28px;
+}
 
-    .details-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
+.positive {
+  color: #22c55e;
+}
 
-    .details-header img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-    }
+.negative {
+  color: #ef4444;
+}
 
-    .details-header h2 {
-      font-size: 1.6rem;
-    }
+#details {
+  margin-top: 2rem;
+  padding: 1.75rem;
+  background: #1e293b;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  display: none;
+}
 
-    .details-header .symbol {
-      color: #94a3b8;
-      font-size: 1rem;
-      font-weight: 400;
-    }
+#details.visible {
+  display: block;
+}
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
 
-    .stat {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 8px;
-    }
+.details-header img {
+  width: 48px;
+  height: 48px;
+}
 
-    .stat-label {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      margin-bottom: 0.3rem;
-    }
+.symbol {
+  color: #94a3b8;
+}
 
-    .stat-value {
-      font-size: 1.15rem;
-      font-weight: 600;
-    }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
 
-    .description {
-      line-height: 1.6;
-      color: #cbd5e1;
-      font-size: 0.95rem;
-    }
+.stat {
+  background: #0f172a;
+  padding: 1rem;
+  border-radius: 8px;
+}
 
-    .loading, .error {
-      text-align: center;
-      padding: 2rem;
-      color: #94a3b8;
-    }
+.stat-label {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
 
-    .error { color: #f87171; }
-  </style>
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.description {
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 2rem;
+}
+
+.error {
+  color: #ef4444;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <h1>Crypto for Koos</h1>
-      <p class="subtitle">Click any coin to see basic information</p>
-      <p class="last-updated" id="last-updated">Loading...<p></p>
-    </header>
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Coin</th>
-            <th>Price</th>
-            <th>24h %</th>
-            <th>Market Cap</th>
-          </tr>
-        </thead>
-        <tbody id="coin-table">
-          <tr>
-            <td colspan="5" class="loading">Loading coins…</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<div class="container">
 
-    <div id="details">
-      <!-- Filled by JavaScript -->
-    </div>
-  </div>
+<header>
+  <h1>Crypto for Koos</h1>
+  <p class="subtitle">
+    Click any coin to see basic information
+  </p>
 
-  <script>
-    const tableBody = document.getElementById("coin-table");
-    const detailsEl = document.getElementById("details");
-    const lastUpdatedEl = document.getElementById("last-updated");
-    let selectedId = null;
-    let coinDetailsCache = {};
+  <button id="refresh-btn">
+    Refresh Data
+  </button>
 
-    // Format large numbers nicely
-    function formatNumber(num) {
-      if (num >= 1e12) return "$" + (num / 1e12).toFixed(2) + "T";
-      if (num >= 1e9)  return "$" + (num / 1e9).toFixed(2) + "B";
-      if (num >= 1e6)  return "$" + (num / 1e6).toFixed(2) + "M";
-      return "$" + num.toLocaleString();
-    }
+  <p id="last-updated" class="last-updated">
+    Loading...
+  </p>
+</header>
 
-    function formatPrice(price) {
-      if (price >= 1) return "$" + price.toLocaleString(undefined, { maximumFractionDigits: 2 });
-      return "$" + price.toPrecision(4);
-    }
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Coin</th>
+        <th>Price</th>
+        <th>24h %</th>
+        <th>Market Cap</th>
+      </tr>
+    </thead>
 
-  // Format the current time
-    function updateTimestamp(){
-      const now = new Date();
-      const options = {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }
-      lastUpdatedEl.textContent = "last updated: " + now.toLocaleString("en-GB", options);
-    }
-    
-    async function loadCoins() {
+    <tbody id="coin-table">
+      <tr>
+        <td colspan="5" class="loading">
+          Loading coins...
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div id="details"></div>
+
+</div>
+
+<script>
+
+const tableBody = document.getElementById("coin-table");
+const detailsEl = document.getElementById("details");
+const lastUpdatedEl = document.getElementById("last-updated");
+
+const CACHE_DURATION = 30 * 60 * 1000;
+
+const COINS_CACHE_KEY = "crypto_koos_coins";
+const DETAILS_CACHE_KEY = "crypto_koos_details";
+
+let selectedId = null;
+
+function saveCache(key, data) {
+
+  localStorage.setItem(
+    key,
+    JSON.stringify({
+      timestamp: Date.now(),
+      data: data
+    })
+  );
+}
+
+function loadCache(key) {
+
+  const cached =
+    localStorage.getItem(key);
+
+  if (!cached) {
+    return null;
+  }
+
   try {
+
+    const parsed =
+      JSON.parse(cached);
+
+    const age =
+      Date.now() - parsed.timestamp;
+
+    if (age > CACHE_DURATION) {
+
+      localStorage.removeItem(key);
+
+      return null;
+    }
+
+    return parsed.data;
+
+  }
+  catch (err) {
+
+    console.error(err);
+
+    localStorage.removeItem(key);
+
+    return null;
+  }
+}
+
+let coinsCache =
+  loadCache(COINS_CACHE_KEY);
+
+let coinDetailsCache =
+  loadCache(DETAILS_CACHE_KEY) || {};
+
+function formatNumber(num) {
+
+  if (!num) return "-";
+
+  if (num >= 1e12)
+    return "$" + (num / 1e12).toFixed(2) + "T";
+
+  if (num >= 1e9)
+    return "$" + (num / 1e9).toFixed(2) + "B";
+
+  if (num >= 1e6)
+    return "$" + (num / 1e6).toFixed(2) + "M";
+
+  return "$" + num.toLocaleString();
+}
+
+function formatPrice(price) {
+
+  if (!price) return "-";
+
+  if (price >= 1) {
+
+    return "$" +
+      price.toLocaleString(undefined, {
+        maximumFractionDigits: 2
+      });
+  }
+
+  return "$" + price.toPrecision(4);
+}
+
+function formatSupply(num) {
+
+  if (!num) return "-";
+
+  if (num >= 1e12)
+    return (num / 1e12).toFixed(2) + "T";
+
+  if (num >= 1e9)
+    return (num / 1e9).toFixed(2) + "B";
+
+  if (num >= 1e6)
+    return (num / 1e6).toFixed(2) + "M";
+
+  return Math.round(num).toLocaleString();
+}
+
+function updateTimestamp(timestamp = Date.now()) {
+
+  const date =
+    new Date(timestamp);
+
+  lastUpdatedEl.textContent =
+    "Last Updated: " +
+    date.toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+}
+
+function renderCoins(coins) {
+
+  tableBody.innerHTML = "";
+
+  coins.forEach((coin, index) => {
+
+    const change =
+      coin.price_change_percentage_24h || 0;
+
+    const row =
+      document.createElement("tr");
+
+    row.dataset.id = coin.id;
+
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>
+        <div class="coin-name">
+          <img src="${coin.image}" alt="${coin.name}">
+          <span>
+            ${coin.name}
+            <small style="color:#94a3b8">
+              ${coin.symbol.toUpperCase()}
+            </small>
+          </span>
+        </div>
+      </td>
+      <td>${formatPrice(coin.current_price)}</td>
+      <td class="${change >= 0 ? 'positive' : 'negative'}">
+        ${change >= 0 ? '+' : ''}${change.toFixed(2)}%
+      </td>
+      <td>${formatNumber(coin.market_cap)}</td>
+    `;
+
+    row.addEventListener("click",
+      () => selectCoin(coin.id, row));
+
+    tableBody.appendChild(row);
+  });
+}
+
+async function loadCoins(forceRefresh = false) {
+
+  try {
+
+    if (!forceRefresh && coinsCache) {
+
+      renderCoins(coinsCache);
+
+      const cached =
+        JSON.parse(
+          localStorage.getItem(COINS_CACHE_KEY)
+        );
+
+      if (cached?.timestamp) {
+        updateTimestamp(cached.timestamp);
+      }
+
+      return;
+    }
+
     const res = await fetch(
       "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false"
     );
@@ -249,158 +434,238 @@
       throw new Error(`HTTP ${res.status}`);
     }
 
-    const coins = await res.json();
+    const coins =
+      await res.json();
 
-    tableBody.innerHTML = "";
-    updateTimestamp(); //update timestamp when data loads
+    coinsCache = coins;
 
-    coins.forEach((coin, index) => {
-      const change = coin.price_change_percentage_24h || 0;
-      const changeClass = change >= 0 ? "positive" : "negative";
-      const changeText =
-        (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+    saveCache(
+      COINS_CACHE_KEY,
+      coins
+    );
 
-      const row = document.createElement("tr");
-      row.dataset.id = coin.id;
+    renderCoins(coins);
 
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>
-          <div class="coin-name">
-            <img src="${coin.image}" alt="${coin.name}">
-            <span>${coin.name}
-              <small style="color:#94a3b8">
-                ${coin.symbol.toUpperCase()}
-              </small>
-            </span>
-          </div>
-        </td>
-        <td>${formatPrice(coin.current_price)}</td>
-        <td class="${changeClass}">${changeText}</td>
-        <td>${formatNumber(coin.market_cap)}</td>
-      `;
+    updateTimestamp();
 
-      row.addEventListener("click", () => selectCoin(coin.id, row));
-      tableBody.appendChild(row);
-    });
-  } catch (err) {
+  }
+  catch (err) {
+
     console.error(err);
 
     tableBody.innerHTML =
-      '<tr><td colspan="5" class="error">Failed to load coins. Please try again later.</td></tr>';
+      `
+      <tr>
+        <td colspan="5" class="error">
+          Failed to load coins.
+        </td>
+      </tr>
+      `;
   }
 }
 
-
-    function renderCoinDetails(data) {
+function renderCoinDetails(data) {
 
   const change =
-    data.market_data.price_change_percentage_24h || 0;
+    data.market_data
+      .price_change_percentage_24h || 0;
 
   const changeClass =
-    change >= 0 ? "positive" : "negative";
+    change >= 0
+      ? "positive"
+      : "negative";
 
- detailsEl.innerHTML = `
-          <div class="details-header">
-            <img src="${data.image.large}" alt="${data.name}">
-            <div>
-              <h2>${data.name} <span class="symbol">${data.symbol.toUpperCase()}</span></h2>
-              <div style="color:#94a3b8; font-size:0.9rem">Rank #${data.market_cap_rank}</div>
-            </div>
-          </div>
+  detailsEl.classList.add("visible");
 
-          <div class="stats">
-            <div class="stat">
-              <div class="stat-label">Current Price</div>
-              <div class="stat-value">${formatPrice(data.market_data.current_price.usd)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Market Cap</div>
-              <div class="stat-value">${formatNumber(data.market_data.market_cap.usd)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">24h Change</div>
-              <div class="stat-value ${changeClass}">
-                ${change >= 0 ? "+" : ""}${change.toFixed(2)}%
-              </div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">24h Volume</div>
-              <div class="stat-value">${formatNumber(data.market_data.total_volume.usd)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Circulating Supply</div>
-              <div class="stat-value">${formatSupply(data.market_data.circulating_supply)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">All-Time High</div>
-              <div class="stat-value">${formatPrice(data.market_data.ath.usd)}</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Fully Diluted Valuation</div>
-              <div class="stat-value">${formatNumber(data.market_data.fully_diluted_valuation.usd)}</div>
-            </div>
-            
-          </div>
+  detailsEl.innerHTML = `
 
-          <div class="description">
-            ${data.description.en
-              ? data.description.en.split(". ").slice(0, 3).join(". ") + "."
-              : "No description available."}
-          </div>
-        `;
-      } catch (err) {
-        console.error(err);
-        detailsEl.innerHTML = `<div class="error">Could not load details for this coin. Please try again in a minute.</div>`;
-      }
+  <div class="details-header">
+    <img src="${data.image.large}"
+         alt="${data.name}">
+    <div>
+      <h2>
+        ${data.name}
+        <span class="symbol">
+          ${data.symbol.toUpperCase()}
+        </span>
+      </h2>
+      <div style="color:#94a3b8">
+        Rank #${data.market_cap_rank}
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="stat-label">Current Price</div>
+      <div class="stat-value">
+        ${formatPrice(
+          data.market_data.current_price.usd
+        )}
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Market Cap</div>
+      <div class="stat-value">
+        ${formatNumber(
+          data.market_data.market_cap.usd
+        )}
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">24h Change</div>
+      <div class="stat-value ${changeClass}">
+        ${change >= 0 ? '+' : ''}
+        ${change.toFixed(2)}%
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">
+        24h Volume
+      </div>
+      <div class="stat-value">
+        ${formatNumber(
+          data.market_data.total_volume.usd
+        )}
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">
+        Circulating Supply
+      </div>
+      <div class="stat-value">
+        ${formatSupply(
+          data.market_data.circulating_supply
+        )}
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">
+        All-Time High
+      </div>
+      <div class="stat-value">
+        ${formatPrice(
+          data.market_data.ath.usd
+        )}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="description">
+    ${
+      data.description.en
+        ? data.description.en
+            .split(". ")
+            .slice(0, 3)
+            .join(". ") + "."
+        : "No description available."
     }
-
+  </div>
+  `;
 }
 
-    ///JAW JAW
+async function selectCoin(id, rowElement) {
 
-    
-    // Show details for a selected coin
-    async function selectCoin(id, rowElement) {
-      // Highlight selected row
-      document.querySelectorAll("#coin-table tr").forEach(r => r.classList.remove("selected"));
-      rowElement.classList.add("selected");
-      selectedId = id;
+  if (selectedId === id) {
+    return;
+  }
 
-      detailsEl.classList.add("visible");
+  selectedId = id;
 
-        // Use cached data if already loaded
-      if (coinDetailsCache[id]) {
-       renderCoinDetails(coinDetailsCache[id]);
-      return;
-     }
-      detailsEl.innerHTML = `<div class="loading">Loading details…</div>`;
+  document
+    .querySelectorAll("#coin-table tr")
+    .forEach(r =>
+      r.classList.remove("selected")
+    );
 
-      try {
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
-        if (!res.ok){
-          throw new Error('HTTP ${res.status}');
-        }
-        const data = await res.json();
-        // Save in cache
-        coinDetailsCache[id] = data;
+  rowElement.classList.add("selected");
 
-        renderCoinDetails(data);
-       
+  if (coinDetailsCache[id]) {
 
-        //ATH date formatting
-        let athDate = "-";
-        if (data.market_data;.ath_date && data.market_data.ath_date.usd){
-          athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-          });
-        }
+    renderCoinDetails(
+      coinDetailsCache[id]
+    );
 
-       
-    // Start
-    loadCoins();
-  </script>
+    return;
+  }
+
+  detailsEl.classList.add("visible");
+
+  detailsEl.innerHTML =
+    '<div class="loading">Loading details...</div>';
+
+  try {
+
+    const res =
+      await fetch(
+        `https://api.coingecko.com/api/v3/coins/${id}`
+      );
+
+    if (!res.ok) {
+      throw new Error(
+        `HTTP ${res.status}`
+      );
+    }
+
+    const data =
+      await res.json();
+
+    coinDetailsCache[id] = data;
+
+    saveCache(
+      DETAILS_CACHE_KEY,
+      coinDetailsCache
+    );
+
+    renderCoinDetails(data);
+
+  }
+  catch (err) {
+
+    console.error(err);
+
+    detailsEl.innerHTML =
+      `
+      <div class="error">
+        Could not load coin details.
+      </div>
+      `;
+  }
+}
+
+document
+  .getElementById("refresh-btn")
+  .addEventListener("click", () => {
+
+    localStorage.removeItem(
+      COINS_CACHE_KEY
+    );
+
+    localStorage.removeItem(
+      DETAILS_CACHE_KEY
+    );
+
+    coinsCache = null;
+    coinDetailsCache = {};
+
+    selectedId = null;
+
+    detailsEl.innerHTML = "";
+    detailsEl.classList.remove("visible");
+
+    loadCoins(true);
+  });
+
+loadCoins();
+
+</script>
+
 </body>
 </html>
