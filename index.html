@@ -301,6 +301,9 @@
 
       try {
         const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
+        if (!res.ok){
+          throw new Error('HTTP${res.status}');
+        }
         const data = await res.json();
 
         const change = data.market_data.price_change_percentage_24h;
@@ -308,7 +311,7 @@
 
         //ATH date formatting
         let athDate = "-";
-        if (data.market_date.ath_date && data.market_data.ath_dae.usd){
+        if (data.market_date.ath_date && data.market_data.ath_date.usd){
           athDate=new Date(data.market_data.ath_date.usd).toLocaleDateString ("en-GB", {
             day: "numeric",
             month: "short",
@@ -366,7 +369,8 @@
           </div>
         `;
       } catch (err) {
-        detailsEl.innerHTML = `<div class="error">Could not load details for this coin.</div>`;
+        console.error(err);
+        detailsEl.innerHTML = `<div class="error">Could not load details for this coin. Please try again in a minute.</div>`;
       }
     }
 
